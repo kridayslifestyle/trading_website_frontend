@@ -11,12 +11,28 @@ export default function InquiryPage() {
   const [form,setForm]=useState({ name:"",company:"",email:"",phone:"",country:"",type:"",product:"",quantity:"",budget:"",message:"" });
   const [ok,setOk]=useState(false);
   const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
   const ch=(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>
     setForm(p=>({...p,[e.target.name]:e.target.value}));
   const submit=async(e:React.FormEvent)=>{
-    e.preventDefault();setLoading(true);
-    await new Promise(r=>setTimeout(r,1600));
-    setLoading(false);setOk(true);
+    e.preventDefault();setLoading(true);setError("");
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(()=>({}));
+        throw new Error(data?.error || "Something went wrong. Please try again.");
+      }
+      setOk(true);
+      setForm({ name:"",company:"",email:"",phone:"",country:"",type:"",product:"",quantity:"",budget:"",message:"" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -33,7 +49,7 @@ export default function InquiryPage() {
             Get Your Free Trade Quote
           </h1>
           <p style={{ color:"rgba(147,197,253,.9)",fontSize:"1.05rem",maxWidth:"480px",margin:"0 auto" }}>
-            Fill in your details below and we'll respond with a comprehensive quote within 24 hours.
+            Fill in your details below and we&apos;ll respond with a comprehensive quote within 24 hours.
           </p>
         </div>
       </div>
@@ -92,6 +108,11 @@ export default function InquiryPage() {
             ):(
               <form onSubmit={submit} style={{ display:"flex",flexDirection:"column" as const,gap:"1rem" }}>
                 <h3 style={{ fontFamily:"'Clash Display',sans-serif",fontWeight:700,fontSize:"1.25rem",color:"#0f172a",marginBottom:".25rem" }}>Trade Quote Request</h3>
+                {error && (
+                  <div style={{ padding:".75rem 1rem",borderRadius:"0.75rem",background:"rgba(239,68,68,.08)",border:"1.5px solid rgba(239,68,68,.2)",color:"#b91c1c",fontSize:".825rem" }}>
+                    {error}
+                  </div>
+                )}
                 <div style={{ display:"grid",gridTemplateColumns:"1fr 1fr",gap:".875rem" }}>
                   <div>
                     <label style={{ display:"block",fontSize:".73rem",fontWeight:600,color:"#64748b",marginBottom:5 }}>Full Name *</label>

@@ -1,19 +1,64 @@
 "use client";
-import { useState } from "react";
-import { Search, Plus, Filter, Phone, Mail, MessageCircle, Eye, X, Clock } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Search, Plus, Mail, MessageCircle, Eye, X, Loader2, AlertTriangle } from "lucide-react";
 
 const STAGES = ["All","New","Contacted","Quoted","Negotiating","Closed Won","Closed Lost"];
 
-const LEADS = [
-  { id:1,  name:"Klaus Meier",      email:"klaus@freshco.de",        phone:"+49 89 123456",    country:"🇩🇪 Germany",     product:"Masaz Chairs",   status:"New",         source:"Website",   date:"27 May 2025", value:"$12,000" },
-  { id:2,  name:"Sarah Johnson",    email:"sarah@textilehub.com",    phone:"+1 212 555 0100",  country:"🇺🇸 USA",          product:"Textiles",       status:"Contacted",   source:"WhatsApp",  date:"26 May 2025", value:"$8,500"  },
-  { id:3,  name:"Ahmed Al-Rashid",  email:"ahmed@gulftrade.ae",      phone:"+971 50 123 4567", country:"🇦🇪 UAE",           product:"Home Products",  status:"Quoted",      source:"Website",   date:"25 May 2025", value:"$22,000" },
-  { id:4,  name:"Yuki Tanaka",      email:"yuki@nippon.co.jp",       phone:"+81 3 1234 5678",  country:"🇯🇵 Japan",         product:"Engineering",    status:"New",         source:"Referral",  date:"24 May 2025", value:"$45,000" },
-  { id:5,  name:"Li Wei",           email:"liwei@sinotrade.cn",      phone:"+86 21 1234 5678", country:"🇨🇳 China",         product:"Clothing",       status:"Closed Won",  source:"LinkedIn",  date:"23 May 2025", value:"$18,000" },
-  { id:6,  name:"Maria Santos",     email:"maria@brazilimport.br",   phone:"+55 11 9876 5432", country:"🇧🇷 Brazil",        product:"Textiles",       status:"Negotiating", source:"Website",   date:"22 May 2025", value:"$9,000"  },
-  { id:7,  name:"David Brown",      email:"david@ukimports.co.uk",   phone:"+44 20 7946 0958", country:"🇬🇧 UK",            product:"Masaz Chairs",   status:"Contacted",   source:"Website",   date:"21 May 2025", value:"$6,500"  },
-  { id:8,  name:"Priya Patel",      email:"priya@indotrade.in",      phone:"+91 98765 43210",  country:"🇮🇳 Indo",          product:"Engineering",    status:"Closed Lost", source:"Email",     date:"20 May 2025", value:"$3,000"  },
-];
+// Shape returned by GET /api/leads, mapped to what this UI expects.
+interface Lead {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  country: string;
+  product: string;
+  status: string;
+  source: string;
+  date: string;     // formatted from created_at
+  value: string;     // not collected by the form yet — shown as "—" until added
+  company?: string;
+  inquiryType?: string;
+  quantity?: string;
+  budget?: string;
+  message?: string;
+}
+
+interface ApiLeadRow {
+  id: number;
+  name: string;
+  company: string | null;
+  email: string;
+  phone: string | null;
+  country: string | null;
+  inquiry_type: string | null;
+  product: string | null;
+  quantity: string | null;
+  budget: string | null;
+  message: string | null;
+  status: string;
+  source: string;
+  created_at: string;
+}
+
+function mapLead(row: ApiLeadRow): Lead {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    phone: row.phone || "",
+    country: row.country || "—",
+    product: row.product || "—",
+    status: row.status,
+    source: row.source,
+    date: new Date(row.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }),
+    value: "—",
+    company: row.company || undefined,
+    inquiryType: row.inquiry_type || undefined,
+    quantity: row.quantity || undefined,
+    budget: row.budget || undefined,
+    message: row.message || undefined,
+  };
+}
 
 const STATUS_STYLE: Record<string,{bg:string,color:string}> = {
   "New":          { bg:"rgba(26,92,242,.10)",  color:"#1a5cf2" },
@@ -25,11 +70,70 @@ const STATUS_STYLE: Record<string,{bg:string,color:string}> = {
 };
 
 export default function LeadsPage() {
-  const [stage,   setStage]   = useState("All");
-  const [search,  setSearch]  = useState("");
-  const [selected,setSelected]= useState<typeof LEADS[0]|null>(null);
+  const [leads,    setLeads]    = useState<Lead[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [loadError,setLoadError]= useState("");
+  const [stage,    setStage]    = useState("All");
+  const [search,   setSearch]   = useState("");
+  const [selected, setSelected] = useState<Lead | null>(null);
+  const [updating, setUpdating] = useState(false);
 
-  const filtered = LEADS.filter(l => {
+  const fetchLeads = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const res = await fetch("/api/leads", { signal });
+      if (!res.ok) throw new Error("Failed to load leads");
+      const data = await res.json();
+      if (signal?.aborted) return;
+      setLeads((data.leads as ApiLeadRow[]).map(mapLead));
+      setLoadError("");
+    } catch (err) {
+      if (signal?.aborted || (err instanceof DOMException && err.name === "AbortError")) return;
+      setLoadError("Couldn't load leads. Check your database connection and try again.");
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  }, []);
+
+  // Manual refresh (button click — a user event, not effect-driven):
+  // OK to set loading state synchronously here since it's in response
+  // to a discrete user action, not running inside a useEffect body.
+  const loadLeads = useCallback(() => {
+    setLoading(true);
+    setLoadError("");
+    fetchLeads();
+  }, [fetchLeads]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    // Invoked via Promise chaining rather than calling the async
+    // function directly — works around a known eslint-plugin-react-hooks
+    // false positive (react/react#34743) where set-state-in-effect flags
+    // any setState reachable from an effect-invoked async function, even
+    // when every set call happens after an await.
+    void Promise.resolve().then(() => fetchLeads(controller.signal));
+    return () => controller.abort();
+  }, [fetchLeads]);
+
+  const updateStatus = async (leadId: number, status: string) => {
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/leads/${leadId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      setLeads(prev => prev.map(l => (l.id === leadId ? { ...l, status } : l)));
+      setSelected(prev => (prev && prev.id === leadId ? { ...prev, status } : prev));
+    } catch {
+      // Keep it simple: surface via the loadError banner pattern
+      setLoadError("Couldn't update status. Please try again.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const filtered = leads.filter(l => {
     const matchStage  = stage === "All" || l.status === stage;
     const matchSearch = l.name.toLowerCase().includes(search.toLowerCase()) ||
                         l.country.toLowerCase().includes(search.toLowerCase()) ||
@@ -44,12 +148,18 @@ export default function LeadsPage() {
       <div style={{ display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap" as const,gap:"1rem" }}>
         <div>
           <h2 style={{ fontFamily:"'Clash Display',sans-serif",fontSize:"1.375rem",fontWeight:700,color:"#0f172a",marginBottom:".25rem" }}>Lead Management</h2>
-          <p style={{ fontSize:".875rem",color:"#64748b" }}>{LEADS.length} total leads · {LEADS.filter(l=>l.status==="New").length} new</p>
+          <p style={{ fontSize:".875rem",color:"#64748b" }}>{leads.length} total leads · {leads.filter(l=>l.status==="New").length} new</p>
         </div>
-        <button style={{ display:"inline-flex",alignItems:"center",gap:6,padding:".75rem 1.25rem",borderRadius:"1rem",background:"linear-gradient(135deg,#1a5cf2,#3d7cf5)",color:"#fff",fontWeight:600,fontSize:".875rem",border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(26,92,242,.30)" }}>
-          <Plus style={{ width:16,height:16 }}/> Add Lead
+        <button onClick={loadLeads} style={{ display:"inline-flex",alignItems:"center",gap:6,padding:".75rem 1.25rem",borderRadius:"1rem",background:"linear-gradient(135deg,#1a5cf2,#3d7cf5)",color:"#fff",fontWeight:600,fontSize:".875rem",border:"none",cursor:"pointer",boxShadow:"0 4px 14px rgba(26,92,242,.30)" }}>
+          {loading ? <Loader2 style={{ width:16,height:16 }} className="animate-spin"/> : <Plus style={{ width:16,height:16 }}/>} Refresh
         </button>
       </div>
+
+      {loadError && (
+        <div style={{ display:"flex",alignItems:"center",gap:8,padding:".875rem 1rem",borderRadius:"1rem",background:"rgba(239,68,68,.08)",border:"1.5px solid rgba(239,68,68,.2)",color:"#b91c1c",fontSize:".85rem" }}>
+          <AlertTriangle style={{ width:16,height:16,flexShrink:0 }}/> {loadError}
+        </div>
+      )}
 
       {/* Search + filter */}
       <div style={{ display:"flex",gap:"1rem",flexWrap:"wrap" as const,alignItems:"center" }}>
@@ -64,7 +174,7 @@ export default function LeadsPage() {
       {/* Stage tabs */}
       <div style={{ display:"flex",gap:".5rem",flexWrap:"wrap" as const }}>
         {STAGES.map(s=>{
-          const count = s==="All" ? LEADS.length : LEADS.filter(l=>l.status===s).length;
+          const count = s==="All" ? leads.length : leads.filter(l=>l.status===s).length;
           return (
             <button key={s} onClick={()=>setStage(s)} style={{
               padding:".45rem 1rem",borderRadius:99,fontSize:".8rem",fontWeight:600,
@@ -91,8 +201,18 @@ export default function LeadsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((l,i)=>{
+              {loading ? (
+                <tr><td colSpan={8} style={{ padding:"3rem 1rem",textAlign:"center" as const,color:"#94a3b8",fontSize:".875rem" }}>
+                  <Loader2 style={{ width:20,height:20,margin:"0 auto 8px",display:"block" }} className="animate-spin"/>
+                  Loading leads…
+                </td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={8} style={{ padding:"3rem 1rem",textAlign:"center" as const,color:"#94a3b8",fontSize:".875rem" }}>
+                  {leads.length === 0 ? "No leads yet — they'll appear here as soon as someone submits the inquiry form." : "No leads match your filters."}
+                </td></tr>
+              ) : filtered.map((l,i)=>{
                 const s = STATUS_STYLE[l.status] || STATUS_STYLE["New"];
+                const hasPhone = l.phone.trim().length > 0;
                 return (
                   <tr key={l.id} style={{ borderBottom:i<filtered.length-1?"1px solid #f1f5f9":"none",transition:"background .15s" }}
                     onMouseEnter={e=>(e.currentTarget.style.background="#f8faff")}
@@ -100,7 +220,7 @@ export default function LeadsPage() {
                     <td style={{ padding:".875rem 1rem" }}>
                       <div style={{ display:"flex",alignItems:"center",gap:".75rem" }}>
                         <div style={{ width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#1a5cf2,#3d7cf5)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontWeight:700,fontSize:".8125rem",flexShrink:0 }}>
-                          {l.name[0]}
+                          {l.name[0]?.toUpperCase() || "?"}
                         </div>
                         <div>
                           <div style={{ fontWeight:600,fontSize:".875rem",color:"#0f172a" }}>{l.name}</div>
@@ -123,10 +243,12 @@ export default function LeadsPage() {
                           onMouseLeave={e=>(e.currentTarget.style.background="rgba(26,92,242,.08)")}>
                           <Eye style={{ width:13,height:13,color:"#1a5cf2" }}/>
                         </button>
-                        <a href={`https://wa.me/${l.phone.replace(/[^0-9]/g,"")}`} target="_blank" rel="noopener noreferrer" title="WhatsApp"
-                          style={{ width:30,height:30,borderRadius:".5rem",background:"rgba(37,211,102,.10)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none" }}>
-                          <MessageCircle style={{ width:13,height:13,color:"#25D366" }}/>
-                        </a>
+                        {hasPhone && (
+                          <a href={`https://wa.me/${l.phone.replace(/[^0-9]/g,"")}`} target="_blank" rel="noopener noreferrer" title="WhatsApp"
+                            style={{ width:30,height:30,borderRadius:".5rem",background:"rgba(37,211,102,.10)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none" }}>
+                            <MessageCircle style={{ width:13,height:13,color:"#25D366" }}/>
+                          </a>
+                        )}
                         <a href={`mailto:${l.email}`} title="Email"
                           style={{ width:30,height:30,borderRadius:".5rem",background:"rgba(245,158,11,.10)",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",textDecoration:"none" }}>
                           <Mail style={{ width:13,height:13,color:"#d97706" }}/>
@@ -167,11 +289,12 @@ export default function LeadsPage() {
             {/* Details */}
             {[
               ["📧 Email",   selected.email],
-              ["📞 Phone",   selected.phone],
+              ["📞 Phone",   selected.phone || "Not provided"],
               ["📦 Product", selected.product],
               ["💰 Value",   selected.value],
               ["🌐 Source",  selected.source],
               ["📅 Date",    selected.date],
+              ...(selected.message ? [["📝 Message", selected.message]] : []),
             ].map(([l,v])=>(
               <div key={l} style={{ display:"flex",gap:".75rem",padding:".875rem",background:"#f8faff",borderRadius:".875rem",border:"1px solid #f1f5f9" }}>
                 <span style={{ fontSize:".8rem",color:"#94a3b8",width:"90px",flexShrink:0 }}>{l}</span>
@@ -182,17 +305,24 @@ export default function LeadsPage() {
             {/* Status update */}
             <div>
               <label style={{ display:"block",fontSize:".75rem",fontWeight:600,color:"#64748b",marginBottom:6 }}>Update Status</label>
-              <select defaultValue={selected.status} className="select-field">
+              <select
+                value={selected.status}
+                disabled={updating}
+                onChange={(e)=>updateStatus(selected.id, e.target.value)}
+                className="select-field"
+              >
                 {STAGES.filter(s=>s!=="All").map(s=><option key={s} value={s}>{s}</option>)}
               </select>
             </div>
 
             {/* Action buttons */}
             <div style={{ display:"flex",gap:".75rem" }}>
-              <a href={`https://wa.me/${selected.phone.replace(/[^0-9]/g,"")}`} target="_blank" rel="noopener noreferrer"
-                style={{ flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:".75rem",borderRadius:"1rem",background:"#25D366",color:"#fff",fontWeight:600,fontSize:".875rem",textDecoration:"none" }}>
-                <MessageCircle style={{ width:15,height:15 }}/> WhatsApp
-              </a>
+              {selected.phone && (
+                <a href={`https://wa.me/${selected.phone.replace(/[^0-9]/g,"")}`} target="_blank" rel="noopener noreferrer"
+                  style={{ flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:".75rem",borderRadius:"1rem",background:"#25D366",color:"#fff",fontWeight:600,fontSize:".875rem",textDecoration:"none" }}>
+                  <MessageCircle style={{ width:15,height:15 }}/> WhatsApp
+                </a>
+              )}
               <a href={`mailto:${selected.email}`}
                 style={{ flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,padding:".75rem",borderRadius:"1rem",background:"linear-gradient(135deg,#1a5cf2,#3d7cf5)",color:"#fff",fontWeight:600,fontSize:".875rem",textDecoration:"none" }}>
                 <Mail style={{ width:15,height:15 }}/> Email

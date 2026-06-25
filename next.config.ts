@@ -1,8 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // ─── During development: keep this commented out ───
-  // ─── When ready to deploy: uncomment output: "export" ───
-  // output: "export",
+  // NOTE: Do NOT enable `output: "export"` here.
+  // This project uses Route Handlers (src/app/api/leads) that read
+  // the request body (POST/PATCH) for lead capture, email, and
+  // Telegram notifications. Those are unsupported in static export
+  // mode (https://nextjs.org/docs/app/guides/static-exports#route-handlers).
+  // Deploy this as a regular Next.js server app (Vercel, Railway,
+  // Render, etc.) — not as a static export.
 
   images: {
     unoptimized: true,
