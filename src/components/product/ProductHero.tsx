@@ -13,9 +13,10 @@ import {
 
 interface Props {
   product: Product;
+  onQuote: () => void;
 }
 
-export default function ProductHero({ product }: Props) {
+export default function ProductHero({ product, onQuote }: Props) {
   return (
     <div
       style={{
@@ -155,15 +156,55 @@ export default function ProductHero({ product }: Props) {
           flexWrap: "wrap",
         }}
       >
-        <button style={primaryButton}>
-          <Send size={18} />
-          Get Quote
-        </button>
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <button style={primaryButton} onClick={onQuote}>
+            <Send size={18} />
+            Request Quotation
+          </button>
 
-        <button style={whatsappButton}>
-          <MessageCircle size={18} />
-          WhatsApp
-        </button>
+          <button
+            style={whatsappButton}
+            onClick={() => {
+              const message = `
+Hello,
+
+I am interested in the following product.
+
+Product: ${product.name}
+
+Category: ${product.category}
+
+Price: ${product.currency} ${Number(product.price).toLocaleString()}
+
+MOQ: ${product.moq} ${product.unit}
+
+Please send me:
+• Quotation
+• Delivery Time
+• Payment Terms
+• Catalogue
+
+Thank you.
+`;
+
+              window.open(
+                `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                  message,
+                )}`,
+                "_blank",
+              );
+            }}
+          >
+            <MessageCircle size={18} />
+            Chat on WhatsApp
+          </button>
+        </div>
       </div>
       <div
         style={{
@@ -183,13 +224,7 @@ export default function ProductHero({ product }: Props) {
   );
 }
 
-function TrustItem({
-  title,
-  value,
-}: {
-  title: string;
-  value: string;
-}) {
+function TrustItem({ title, value }: { title: string; value: string }) {
   return (
     <div>
       <div

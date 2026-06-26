@@ -92,15 +92,44 @@ export function ensureProductsTable(): Promise<void> {
 
     updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS leads (
+
+id SERIAL PRIMARY KEY,
+
+product_id INTEGER,
+
+product_name TEXT,
+
+product_slug TEXT,
+
+name TEXT NOT NULL,
+
+email TEXT NOT NULL,
+
+phone TEXT,
+
+company TEXT,
+
+country TEXT,
+
+quantity TEXT,
+
+message TEXT,
+
+status TEXT DEFAULT 'New',
+
+created_at TIMESTAMP DEFAULT NOW()
+
+);
       `,
       )
+
       .then(() => undefined);
   }
 
   return productsTableReady;
 }
-
-
 
 /**
  * Creates the `leads` table if it doesn't exist yet.

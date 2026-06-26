@@ -440,6 +440,8 @@ export default function LeadsPage() {
                         (e.currentTarget.style.background = "transparent")
                       }
                     >
+                      {/* Lead */}
+
                       <td style={{ padding: ".875rem 1rem" }}>
                         <div
                           style={{
@@ -460,50 +462,81 @@ export default function LeadsPage() {
                               justifyContent: "center",
                               color: "#fff",
                               fontWeight: 700,
-                              fontSize: ".8125rem",
+                              fontSize: ".85rem",
                               flexShrink: 0,
                             }}
                           >
-                            {l.name[0]?.toUpperCase() || "?"}
+                            {l.name.charAt(0).toUpperCase()}
                           </div>
+
                           <div>
                             <div
                               style={{
                                 fontWeight: 600,
-                                fontSize: ".875rem",
                                 color: "#0f172a",
+                                fontSize: ".9rem",
                               }}
                             >
                               {l.name}
                             </div>
+
                             <div
-                              style={{ fontSize: ".75rem", color: "#94a3b8" }}
+                              style={{
+                                color: "#94A3B8",
+                                fontSize: ".78rem",
+                              }}
                             >
                               {l.email}
                             </div>
                           </div>
                         </div>
                       </td>
+                      {/* Company */}
+
                       <td
                         style={{
                           padding: ".875rem 1rem",
                           fontSize: ".875rem",
                           color: "#475569",
-                          whiteSpace: "nowrap" as const,
+                          whiteSpace: "nowrap",
                         }}
                       >
-                        {l.country}
+                        {l.company || "-"}
                       </td>
+
+                      {/* Country */}
+
                       <td
                         style={{
                           padding: ".875rem 1rem",
                           fontSize: ".875rem",
                           color: "#475569",
+                          whiteSpace: "nowrap",
                         }}
                       >
-                        {l.product}
+                        {l.country || "-"}
                       </td>
-                      <td style={{ padding: ".875rem 1rem" }}>
+
+                      {/* Product */}
+
+                      <td
+                        style={{
+                          padding: ".875rem 1rem",
+                          fontSize: ".875rem",
+                          color: "#475569",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {l.product || "-"}
+                      </td>
+
+                      {/* Status */}
+
+                      <td
+                        style={{
+                          padding: ".875rem 1rem",
+                        }}
+                      >
                         <span
                           style={{
                             fontSize: ".72rem",
@@ -512,27 +545,21 @@ export default function LeadsPage() {
                             borderRadius: 99,
                             background: s.bg,
                             color: s.color,
-                            whiteSpace: "nowrap" as const,
+                            whiteSpace: "nowrap",
                           }}
                         >
                           {l.status}
                         </span>
                       </td>
-                      <td
-                        style={{
-                          padding: ".875rem 1rem",
-                          fontSize: ".8rem",
-                          color: "#64748b",
-                        }}
-                      >
-                        {l.source}
-                      </td>
+
+                      {/* Date */}
+
                       <td
                         style={{
                           padding: ".875rem 1rem",
                           fontSize: ".8rem",
                           color: "#94a3b8",
-                          whiteSpace: "nowrap" as const,
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {l.date}
@@ -717,7 +744,7 @@ export default function LeadsPage() {
                   fontSize: "1.25rem",
                 }}
               >
-                {selected.name[0]}
+                {selected.name.charAt(0).toUpperCase()}
               </div>
               <div>
                 <div

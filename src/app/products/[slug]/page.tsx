@@ -7,11 +7,13 @@ import ProductGallery from "@/components/product/ProductGallery";
 import ProductHero from "@/components/product/ProductHero";
 import ProductDescription from "@/components/product/ProductDescription";
 import RelatedProducts from "@/components/product/RelatedProducts";
+import GetQuoteModal from "@/components/product/GetQuoteModal";
 
 export default function ProductDetailsPage() {
   const { slug } = useParams();
 
   const [product, setProduct] = useState<any>(null);
+  const [quoteOpen, setQuoteOpen] = useState(false);
 
   useEffect(() => {
     async function loadProduct() {
@@ -32,37 +34,40 @@ export default function ProductDetailsPage() {
   }
 
   return (
-  <div
-    style={{
-      maxWidth: 1280,
-      margin: "60px auto",
-      padding: "0 20px",
-    }}
-  >
-    <ProductBreadcrumb product={product} />
-
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "520px 1fr",
-        gap: "4rem",
-        alignItems: "start",
+        maxWidth: 1280,
+        margin: "60px auto",
+        padding: "0 20px",
       }}
     >
-      <ProductGallery
-        image={product.image}
-        name={product.name}
-      />
+      <ProductBreadcrumb product={product} />
 
-      <ProductHero product={product} />
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "520px 1fr",
+          gap: "4rem",
+          alignItems: "start",
+        }}
+      >
+        <ProductGallery image={product.image} name={product.name} />
+
+        <ProductHero product={product} onQuote={() => setQuoteOpen(true)} />
+      </div>
+
+      <ProductDescription product={product} />
+
+      <RelatedProducts category={product.category} currentId={product.id} />
+      <GetQuoteModal
+  open={quoteOpen}
+  onClose={() => setQuoteOpen(false)}
+  product={{
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+  }}
+/>
     </div>
-
-    <ProductDescription product={product} />
-
-    <RelatedProducts
-      category={product.category}
-      currentId={product.id}
-    />
-  </div>
-);
+  );
 }
