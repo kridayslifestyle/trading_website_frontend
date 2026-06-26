@@ -13,7 +13,7 @@ function createPool(): Pool {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
     throw new Error(
-      "DATABASE_URL is not set. Add it to .env.local (copy from Railway → Postgres service → Variables)."
+      "DATABASE_URL is not set. Add it to .env.local (copy from Railway → Postgres service → Variables).",
     );
   }
   return new Pool({
@@ -21,7 +21,9 @@ function createPool(): Pool {
     // Railway's Postgres is reachable over a plain TLS connection;
     // this relaxed setting avoids self-signed cert failures in most
     // Railway plans. Tighten this if your plan provides a CA bundle.
-    ssl: connectionString.includes("railway") ? { rejectUnauthorized: false } : undefined,
+    ssl: connectionString.includes("railway")
+      ? { rejectUnauthorized: false }
+      : undefined,
     max: 5,
   });
 }
@@ -50,6 +52,56 @@ export const pool: Pool = new Proxy({} as Pool, {
 
 let tableReady: Promise<void> | null = null;
 
+let productsTableReady: Promise<void> | null = null;
+
+export function ensureProductsTable(): Promise<void> {
+  if (!productsTableReady) {
+    productsTableReady = pool
+      .query(
+        `
+        CREATE TABLE IF NOT EXISTS products (
+    id SERIAL PRIMARY KEY,
+
+    name TEXT NOT NULL,
+
+    slug TEXT UNIQUE NOT NULL,
+
+    category TEXT NOT NULL,
+
+    origin_country TEXT,
+
+    short_description TEXT,
+
+    description TEXT,
+
+    images JSONB DEFAULT '[]'::jsonb,
+
+    price NUMERIC,
+
+    currency TEXT DEFAULT 'USD',
+
+    moq TEXT,
+
+    unit TEXT,
+
+    featured BOOLEAN DEFAULT FALSE,
+
+    published BOOLEAN DEFAULT TRUE,
+
+    created_at TIMESTAMPTZ DEFAULT now(),
+
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+      `,
+      )
+      .then(() => undefined);
+  }
+
+  return productsTableReady;
+}
+
+
+
 /**
  * Creates the `leads` table if it doesn't exist yet.
  * Safe to call on every request — it's a cheap IF NOT EXISTS check,
@@ -58,7 +110,8 @@ let tableReady: Promise<void> | null = null;
 export function ensureLeadsTable(): Promise<void> {
   if (!tableReady) {
     tableReady = pool
-      .query(`
+      .query(
+        `
         CREATE TABLE IF NOT EXISTS leads (
           id          SERIAL PRIMARY KEY,
           name        TEXT NOT NULL,
@@ -75,7 +128,8 @@ export function ensureLeadsTable(): Promise<void> {
           source      TEXT NOT NULL DEFAULT 'Website',
           created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
         );
-      `)
+      `,
+      )
       .then(() => undefined);
   }
   return tableReady;

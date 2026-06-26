@@ -33,8 +33,11 @@ export async function POST(request: NextRequest) {
   const parsed = inquirySchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Validation failed", details: parsed.error.flatten().fieldErrors },
-      { status: 400 }
+      {
+        error: "Validation failed",
+        details: parsed.error.flatten().fieldErrors,
+      },
+      { status: 400 },
     );
   }
   const data = parsed.data;
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
         data.quantity || null,
         data.budget || null,
         data.message,
-      ]
+      ],
     );
 
     const lead = result.rows[0];
@@ -109,11 +112,18 @@ export async function GET() {
     const result = await pool.query(
       `SELECT id, name, company, email, phone, country, inquiry_type, product, quantity, budget, message, status, source, created_at
        FROM leads
-       ORDER BY created_at DESC`
+       ORDER BY created_at DESC`,
     );
     return NextResponse.json({ leads: result.rows });
-  } catch (err) {
-    console.error("[api/leads] GET failed:", err);
-    return NextResponse.json({ error: "Failed to fetch leads" }, { status: 500 });
+  } catch (error) {
+    console.error("GET /api/leads error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to fetch leads",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
   }
 }

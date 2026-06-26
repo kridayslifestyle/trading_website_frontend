@@ -11,7 +11,6 @@ import {
 const NAV = [
   { icon: LayoutDashboard, label: "Dashboard",    href: "/admin",            badge: null },
   { icon: Users,           label: "Leads",         href: "/admin/leads",      badge: "12" },
-  { icon: MessageSquare,   label: "Inquiries",     href: "/admin/inquiries",  badge: "5"  },
   { icon: Package,         label: "Products",      href: "/admin/products",   badge: null },
   { icon: FileText,        label: "Blog",          href: "/admin/blog",       badge: null },
   { icon: BarChart3,       label: "Analytics",     href: "/admin/analytics",  badge: null },
