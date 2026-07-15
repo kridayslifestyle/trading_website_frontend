@@ -3,13 +3,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 const TEAM = [
-  { name:"Rajesh Kumar",   role:"Founder & CEO",            flag:"🇮🇳", emoji:"👨‍💼", exp:"20yr exp" },
+  { name:"Sai Krishna",   role:"Founder & CEO",            flag:"🇮🇳", emoji:"👨‍💼", exp:"20yr exp" },
   { name:"Wei Zhang",      role:"Head of China Operations",  flag:"🇨🇳", emoji:"👨‍💼", exp:"15yr exp" },
-  { name:"Priya Sharma",   role:"Export Manager",            flag:"🇮🇳", emoji:"👩‍💼", exp:"10yr exp" },
-  { name:"David Miller",   role:"Global Sales Director",     flag:"🇺🇸", emoji:"👨‍💼", exp:"12yr exp" },
+  // { name:"Priya Sharma",   role:"Export Manager",            flag:"🇮🇳", emoji:"👩‍💼", exp:"10yr exp" },
+  // { name:"David Miller",   role:"Global Sales Director",     flag:"🇺🇸", emoji:"👨‍💼", exp:"12yr exp" },
 ];
 
-const CERTS = ["ISO 9001:2015","IEC Certified","FIEO Member","CII Member","DGFT Registered","MSME Certified"];
 
 const MILESTONES = [
   { year:"2009", event:"Company founded in Hyderabad, India" },
@@ -113,7 +112,7 @@ export default function AboutPage() {
         </div>
 
         {/* Certifications */}
-        <div style={{ background:"#f8faff",borderRadius:"2rem",padding:"3rem",border:"1.5px solid #e2e8f0",textAlign:"center" }}>
+        {/* <div style={{ background:"#f8faff",borderRadius:"2rem",padding:"3rem",border:"1.5px solid #e2e8f0",textAlign:"center" }}>
           <h2 style={{ fontFamily:"'Clash Display',sans-serif",fontSize:"1.5rem",fontWeight:700,color:"#0f172a",marginBottom:"2rem" }}>Certifications & Memberships</h2>
           <div style={{ display:"flex",flexWrap:"wrap" as const,gap:"1rem",justifyContent:"center" }}>
             {CERTS.map(c=>(
@@ -128,7 +127,7 @@ export default function AboutPage() {
               Start Trading With Us <ArrowRight style={{ width:16,height:16 }}/>
             </Link>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

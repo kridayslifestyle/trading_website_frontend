@@ -1,0 +1,6 @@
+POST http://localhost:3000/api/admin/social/generate
+Content-Type: application/json
+
+{
+  "productId": 3
+}

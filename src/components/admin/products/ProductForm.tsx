@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ProductFormData } from "./types";
 
 import type { Product } from "@/types/product";
-
+import ImageUploader from "@/components/admin/ImageUploader";
 // export interface ProductFormData {
 //   name: string;
 //   slug: string;
@@ -80,40 +80,6 @@ export default function ProductForm({
     fontWeight: 600,
     color: "#334155",
     fontSize: ".85rem",
-  };
-
-  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-
-    const file = e.target.files[0];
-
-    const data = new FormData();
-
-    data.append("file", file);
-    data.append(
-      "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET!,
-    );
-
-    try {
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: data,
-        },
-      );
-
-      const json = await res.json();
-
-      setForm((prev) => ({
-        ...prev,
-        image: json.secure_url,
-      }));
-    } catch (err) {
-      console.error(err);
-      alert("Image upload failed");
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -339,35 +305,15 @@ export default function ProductForm({
         <div>
           <label style={labelStyle}>Product Image</label>
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={uploadImage}
-            style={{
-              marginTop: 8,
-              width: "100%",
-            }}
+          <ImageUploader
+            value={form.image}
+            onChange={(url) =>
+              setForm({
+                ...form,
+                image: url,
+              })
+            }
           />
-
-          {form.image && (
-            <div
-              style={{
-                marginTop: 16,
-              }}
-            >
-              <img
-                src={form.image}
-                alt="Preview"
-                style={{
-                  width: 180,
-                  height: 180,
-                  objectFit: "cover",
-                  borderRadius: 12,
-                  border: "1px solid #e2e8f0",
-                }}
-              />
-            </div>
-          )}
         </div>
 
         {/* Short Description */}

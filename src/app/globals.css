@@ -734,3 +734,42 @@ a { text-decoration: none; color: inherit; }
 ════════════════════════════════════════════════════════════════════ */
 .reveal { opacity:0; transform:translateY(24px); transition:opacity .65s ease,transform .65s ease; }
 .reveal.in  { opacity:1; transform:translateY(0); }
+
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3 {
+  color: #0f172a;
+  margin: 1.5rem 0 1rem;
+  font-weight: 700;
+}
+
+.blog-content p {
+  margin-bottom: 1rem;
+  line-height: 1.9;
+}
+
+.blog-content img {
+  width: 100%;
+  border-radius: 16px;
+  margin: 2rem 0;
+}
+
+.blog-content ul,
+.blog-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.blog-content blockquote {
+  border-left: 4px solid #2563eb;
+  padding-left: 1rem;
+  margin: 1.5rem 0;
+  color: #475569;
+  font-style: italic;
+}
+
+.blog-content a {
+  color: #2563eb;
+  text-decoration: underline;
+}

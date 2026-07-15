@@ -206,12 +206,12 @@ export default function AdminDashboard() {
             }}
           >
             {`Good ${
-  new Date().getHours() < 12
-    ? "Morning"
-    : new Date().getHours() < 18
-    ? "Afternoon"
-    : "Evening"
-}, Admin 👋`}
+              new Date().getHours() < 12
+                ? "Morning"
+                : new Date().getHours() < 18
+                  ? "Afternoon"
+                  : "Evening"
+            }, Admin 👋`}
           </h2>
           <p
             style={{
@@ -403,102 +403,102 @@ export default function AdminDashboard() {
             }}
           >
             {recentLeads.length === 0 ? (
-  <div
-    style={{
-      textAlign: "center",
-      padding: "3rem",
-      color: "#94a3b8",
-    }}
-  >
-    No leads yet.
-  </div>
-) : (
-  recentLeads.map((lead) => {
-    const s = STATUS_STYLE[lead.status] || STATUS_STYLE["New"];
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "3rem",
+                  color: "#94a3b8",
+                }}
+              >
+                No leads yet.
+              </div>
+            ) : (
+              recentLeads.map((lead) => {
+                const s = STATUS_STYLE[lead.status] || STATUS_STYLE["New"];
 
-    return (
-      <div
-        key={lead.id}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: ".875rem",
-          padding: ".875rem",
-          borderRadius: "1rem",
-          background: "#f8faff",
-          border: "1px solid #f1f5f9",
-        }}
-      >
-        <div
-          style={{
-            width: 38,
-            height: 38,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg,#1a5cf2,#3d7cf5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontWeight: 700,
-          }}
-        >
-          {lead.name.charAt(0).toUpperCase()}
-        </div>
+                return (
+                  <div
+                    key={lead.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: ".875rem",
+                      padding: ".875rem",
+                      borderRadius: "1rem",
+                      background: "#f8faff",
+                      border: "1px solid #f1f5f9",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: "50%",
+                        background: "linear-gradient(135deg,#1a5cf2,#3d7cf5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {lead.name.charAt(0).toUpperCase()}
+                    </div>
 
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              fontWeight: 600,
-              color: "#0f172a",
-            }}
-          >
-            {lead.name}
-          </div>
+                    <div style={{ flex: 1 }}>
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          color: "#0f172a",
+                        }}
+                      >
+                        {lead.name}
+                      </div>
 
-          <div
-            style={{
-              fontSize: ".75rem",
-              color: "#64748b",
-            }}
-          >
-            🌍 {lead.country} • {lead.product}
-          </div>
-        </div>
+                      <div
+                        style={{
+                          fontSize: ".75rem",
+                          color: "#64748b",
+                        }}
+                      >
+                        🌍 {lead.country} • {lead.product}
+                      </div>
+                    </div>
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 4,
-          }}
-        >
-          <span
-            style={{
-              fontSize: ".68rem",
-              fontWeight: 700,
-              padding: "2px 8px",
-              borderRadius: 99,
-              background: s.bg,
-              color: s.color,
-            }}
-          >
-            {lead.status}
-          </span>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        gap: 4,
+                      }}
+                    >
+                      <span
+                        style={{
+                          fontSize: ".68rem",
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 99,
+                          background: s.bg,
+                          color: s.color,
+                        }}
+                      >
+                        {lead.status}
+                      </span>
 
-          <span
-            style={{
-              fontSize: ".68rem",
-              color: "#94a3b8",
-            }}
-          >
-            {new Date(lead.created_at).toLocaleDateString()}
-          </span>
-        </div>
-      </div>
-    );
-  })
-)}
+                      <span
+                        style={{
+                          fontSize: ".68rem",
+                          color: "#94a3b8",
+                        }}
+                      >
+                        {new Date(lead.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
 

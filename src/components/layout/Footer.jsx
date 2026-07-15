@@ -144,31 +144,31 @@ export default function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-brand-400 mt-0.5 shrink-0" />
                 <span className="text-slate-400 text-sm">
-                  Trade Tower, Banjara Hills,<br />Hyderabad – 500034, India
+                  Flat No. 104, padmaja rajas eclave, Bhagya Nagar Colony, Kukatpally,<br />Hyderabad – 500072, India
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-4 h-4 text-brand-400 shrink-0" />
-                <a href="tel:+919000000000" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  +91 90000 00000
+                <a href="tel:+917673953622" className="text-slate-400 hover:text-white text-sm transition-colors">
+                  +91 76739 53622
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-brand-400 shrink-0" />
                 <a href="mailto:info@tradeproglobal.com" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  info@tradeproglobal.com
+                  info.tradeproglobal@gmail.com
                 </a>
               </li>
             </ul>
 
             {/* Certifications */}
-            <div className="mt-6 flex items-center gap-2 flex-wrap">
+            {/* <div className="mt-6 flex items-center gap-2 flex-wrap">
               {["ISO 9001", "IEC Certified", "FIEO Member"].map((cert) => (
                 <span key={cert} className="px-2.5 py-1 bg-white/5 border border-white/10 rounded-lg text-xs text-slate-400">
                   {cert}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

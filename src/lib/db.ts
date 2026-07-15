@@ -131,11 +131,41 @@ created_at TIMESTAMP DEFAULT NOW()
   return productsTableReady;
 }
 
-/**
- * Creates the `leads` table if it doesn't exist yet.
- * Safe to call on every request — it's a cheap IF NOT EXISTS check,
- * and the promise is cached so it only actually runs once per server.
- */
+export async function ensureBlogsTable() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS blogs (
+      id SERIAL PRIMARY KEY,
+
+      title VARCHAR(255) NOT NULL,
+
+      slug VARCHAR(255) UNIQUE NOT NULL,
+
+      category VARCHAR(120),
+
+      excerpt TEXT,
+
+      content TEXT,
+
+      featured_image TEXT,
+
+      seo_title VARCHAR(255),
+
+      seo_description TEXT,
+
+      seo_keywords TEXT,
+
+      status VARCHAR(20) DEFAULT 'Draft',
+
+      views INTEGER DEFAULT 0,
+
+      created_at TIMESTAMP DEFAULT NOW(),
+
+      updated_at TIMESTAMP DEFAULT NOW()
+    )
+  `);
+}
+
+
 export function ensureLeadsTable(): Promise<void> {
   if (!tableReady) {
     tableReady = pool
@@ -162,4 +192,38 @@ export function ensureLeadsTable(): Promise<void> {
       .then(() => undefined);
   }
   return tableReady;
+}
+
+let socialPostsTableReady: Promise<void> | null = null;
+
+export function ensureSocialPostsTable(): Promise<void> {
+  if (!socialPostsTableReady) {
+    socialPostsTableReady = pool
+      .query(`
+        CREATE TABLE IF NOT EXISTS social_posts (
+
+          id SERIAL PRIMARY KEY,
+
+          product_id INTEGER,
+
+          product_name TEXT,
+
+          product_image TEXT,
+
+          facebook_caption TEXT,
+
+          instagram_caption TEXT,
+
+          hashtags TEXT,
+
+          status TEXT DEFAULT 'Draft',
+
+          created_at TIMESTAMP DEFAULT NOW()
+
+        );
+      `)
+      .then(() => undefined);
+  }
+
+  return socialPostsTableReady;
 }

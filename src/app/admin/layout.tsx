@@ -302,7 +302,7 @@ export default function AdminLayout({
                 color: "rgba(147,197,253,.6)",
               }}
             >
-              Default password: admin@tradepro123
+              Protected by secure authentication
             </p>
           </form>
         </div>

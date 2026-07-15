@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Send, CheckCircle, MapPin, Phone, Mail, Clock } from "lucide-react";
 
 const CONTACT_INFO = [
-  { icon: MapPin, label:"Office Address",  value:"Trade Tower, Banjara Hills,\nHyderabad – 500034, Telangana, India", color:"#1a5cf2" },
-  { icon: Phone,  label:"Phone / WhatsApp",value:"+91 90000 00000", color:"#10b981", href:"tel:+919000000000" },
-  { icon: Mail,   label:"Email",           value:"info@tradeproglobal.com", color:"#8b5cf6", href:"mailto:info@tradeproglobal.com" },
+  { icon: MapPin, label:"Office Address",  value:"Flat No. 104, padmaja rajas eclave, Bhagya Nagar Colony, Kukatpally,\nHyderabad – 500072, Telangana, India", color:"#1a5cf2" },
+  { icon: Phone,  label:"Phone / WhatsApp",value:"+91 76739 53622", color:"#10b981", href:"tel:+919000000000" },
+  { icon: Mail,   label:"Email",           value:"info.tradeproglobal@gmail.com", color:"#8b5cf6", href:"mailto:info@tradeproglobal.com" },
   { icon: Clock,  label:"Business Hours",  value:"Mon–Sat: 9:00 AM – 6:30 PM IST", color:"#f59e0b" },
 ];
 
