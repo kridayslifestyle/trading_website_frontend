@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import Reveal from "@/components/common/Reveal";
 
 const STATS = [
   { value:80,  suffix:"+",  label:"Countries Served",  desc:"Active trade relationships worldwide"       },
@@ -39,14 +40,16 @@ export default function StatsSection() {
     <section ref={ref} className="stats-section">
       <div className="container-custom">
         <div className="stats-grid">
-          {STATS.map(({value,suffix,label,desc})=>(
-            <div key={label} className="stat-card">
-              <div className="stat-num tabular-nums">
-                <Counter target={value} suffix={suffix} start={started} />
+          {STATS.map(({value,suffix,label,desc},i)=>(
+            <Reveal key={label} delay={i * 0.1}>
+              <div className="stat-card">
+                <div className="stat-num tabular-nums">
+                  <Counter target={value} suffix={suffix} start={started} />
+                </div>
+                <div className="stat-lbl">{label}</div>
+                <div className="stat-desc">{desc}</div>
               </div>
-              <div className="stat-lbl">{label}</div>
-              <div className="stat-desc">{desc}</div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>

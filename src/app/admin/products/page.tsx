@@ -36,8 +36,14 @@ export default function ProductsPage() {
     loadProducts();
   }, []);
 
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
   const handleDelete = async () => {
     if (!deleteProduct) return;
+
+    setDeleteError("");
+    setDeletingId(deleteProduct.id);
 
     try {
       const res = await fetch(`/api/products/${deleteProduct.id}`, {
@@ -45,30 +51,16 @@ export default function ProductsPage() {
       });
 
       if (!res.ok) {
-        throw new Error();
+        throw new Error("Failed to delete product");
       }
 
       setDeleteProduct(null);
-
       loadProducts();
     } catch (err) {
       console.error(err);
-    }
-  };
-
-  const deleteCurrentProduct = async () => {
-    if (!deleteProduct) return;
-
-    try {
-      await fetch(`/api/products/${deleteProduct.id}`, {
-        method: "DELETE",
-      });
-
-      setDeleteProduct(null);
-
-      loadProducts();
-    } catch (err) {
-      console.error(err);
+      setDeleteError("Something went wrong while deleting. Please try again.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -160,6 +152,18 @@ export default function ProductsPage() {
               <b> {deleteProduct.name}</b>?
             </p>
 
+            {deleteError && (
+              <p
+                style={{
+                  marginTop: 10,
+                  color: "#dc2626",
+                  fontSize: ".875rem",
+                }}
+              >
+                {deleteError}
+              </p>
+            )}
+
             <div
               style={{
                 display: "flex",
@@ -168,7 +172,14 @@ export default function ProductsPage() {
                 marginTop: 30,
               }}
             >
-              <button onClick={() => setDeleteProduct(null)}>Cancel</button>
+              <button
+                onClick={() => {
+                  setDeleteProduct(null);
+                  setDeleteError("");
+                }}
+              >
+                Cancel
+              </button>
 
               <button
                 style={{
@@ -177,11 +188,13 @@ export default function ProductsPage() {
                   border: "none",
                   padding: ".75rem 1.4rem",
                   borderRadius: 10,
-                  cursor: "pointer",
+                  cursor: deletingId ? "default" : "pointer",
+                  opacity: deletingId ? 0.7 : 1,
                 }}
-                onClick={deleteCurrentProduct}
+                disabled={!!deletingId}
+                onClick={handleDelete}
               >
-                Delete
+                {deletingId ? "Deleting…" : "Delete"}
               </button>
             </div>
           </div>

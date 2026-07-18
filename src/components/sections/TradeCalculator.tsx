@@ -1,21 +1,59 @@
 "use client";
 import { useState } from "react";
 import { Search, ArrowRight, Zap } from "lucide-react";
+import Reveal from "@/components/common/Reveal";
 
 const COUNTRIES = ["India (Indo)","China","United States","Germany","United Arab Emirates","United Kingdom","Japan","Singapore","Australia","Canada","France","Italy","Brazil","South Korea","Netherlands","Saudi Arabia","Turkey","Indonesia","Mexico","South Africa"];
 const PRODUCTS  = ["Masaz Chairs & Furniture","Clothing & Apparel","Engineering Tools & Machinery","Textiles & Apparel","Home Products"];
 const TYPES     = ["Import","Export","Both (Import & Export)"];
 const QUANTITIES= ["Below 100 units","100–500 units","500–1000 units","1000–5000 units","5000+ units"];
 
+const EMPTY_FORM = {name:"",email:"",from:"",to:"",product:"",type:"",qty:""};
+
 export default function TradeCalculator() {
-  const [form,setForm]=useState({from:"",to:"",product:"",type:"",qty:""});
+  const [form,setForm]=useState(EMPTY_FORM);
   const [ok,setOk]=useState(false);
   const [loading,setLoading]=useState(false);
-  const set=(k:string)=>(e:React.ChangeEvent<HTMLSelectElement>)=>setForm(p=>({...p,[k]:e.target.value}));
+  const [error,setError]=useState("");
+  const set=(k:string)=>(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement>)=>setForm(p=>({...p,[k]:e.target.value}));
   const submit=async(e:React.FormEvent)=>{
-    e.preventDefault();setLoading(true);
-    await new Promise(r=>setTimeout(r,1400));
-    setLoading(false);setOk(true);
+    e.preventDefault();
+    setError("");
+
+    if (!form.name.trim() || !form.email.trim()) {
+      setError("Please enter your name and email so our team can reach you.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          country: form.to,
+          type: form.type,
+          product: form.product,
+          quantity: form.qty,
+          message: `Quick trade enquiry — Origin: ${form.from || "Not specified"}, Destination: ${form.to || "Not specified"}.`,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to submit enquiry");
+      }
+
+      setOk(true);
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again in a moment.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,7 +72,7 @@ export default function TradeCalculator() {
 
       <div className="container-custom" style={{position:"relative",zIndex:1}}>
         {/* heading */}
-        <div style={{textAlign:"center",marginBottom:"2rem"}}>
+        <Reveal style={{textAlign:"center",marginBottom:"2rem"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"6px 16px",borderRadius:99,background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.15)",color:"rgba(191,219,254,1)",fontSize:".72rem",fontWeight:600,letterSpacing:".08em",textTransform:"uppercase",marginBottom:"1rem"}}>
             <Zap style={{width:13,height:13,color:"#f5c842"}} fill="#f5c842" /> Quick Trade Enquiry
           </div>
@@ -44,9 +82,10 @@ export default function TradeCalculator() {
           <p style={{color:"rgba(147,197,253,.85)",fontSize:".9rem"}}>
             Fill in your trade details and our team will respond within 24 hours.
           </p>
-        </div>
+        </Reveal>
 
         {/* card */}
+        <Reveal delay={0.1}>
         <div style={{
           background:"rgba(255,255,255,.06)",
           backdropFilter:"blur(24px)",
@@ -65,7 +104,7 @@ export default function TradeCalculator() {
               <div style={{fontSize:"3rem",marginBottom:"1rem"}}>✅</div>
               <p style={{color:"#fff",fontWeight:700,fontSize:"1.1rem",marginBottom:".5rem"}}>Enquiry Submitted!</p>
               <p style={{color:"rgba(147,197,253,.8)",fontSize:".875rem"}}>Our team will contact you within 24 hours.</p>
-              <button onClick={()=>{setOk(false);setForm({from:"",to:"",product:"",type:"",qty:""})}}
+              <button onClick={()=>{setOk(false);setForm(EMPTY_FORM)}}
                 style={{marginTop:"1rem",color:"rgba(147,197,253,.8)",fontSize:".8rem",textDecoration:"underline",background:"none",border:"none",cursor:"pointer"}}>
                 Submit another
               </button>
@@ -73,6 +112,45 @@ export default function TradeCalculator() {
           ):(
             <form onSubmit={submit}>
               <div style={{display:"grid",gap:"1rem",gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",alignItems:"end"}}>
+
+                {/* Name + Email — required so our team can actually respond */}
+                <div>
+                  <label style={{display:"block",fontSize:".7rem",fontWeight:700,color:"rgba(147,197,253,.9)",marginBottom:".4rem",letterSpacing:".05em",textTransform:"uppercase"}}>
+                    👤  Your Name
+                  </label>
+                  <input
+                    value={form.name}
+                    onChange={set("name")}
+                    placeholder="John Smith"
+                    style={{
+                      width:"100%",padding:".7rem 1rem",borderRadius:".875rem",
+                      background:"rgba(255,255,255,.10)",border:"1px solid rgba(255,255,255,.18)",
+                      color:"#fff",fontSize:".875rem",outline:"none",
+                      transition:"background .2s,border-color .2s",
+                    }}
+                    onFocus={e=>{e.target.style.background="rgba(255,255,255,.15)";e.target.style.borderColor="rgba(61,124,245,.8)";}}
+                    onBlur={e=>{e.target.style.background="rgba(255,255,255,.10)";e.target.style.borderColor="rgba(255,255,255,.18)";}}
+                  />
+                </div>
+                <div>
+                  <label style={{display:"block",fontSize:".7rem",fontWeight:700,color:"rgba(147,197,253,.9)",marginBottom:".4rem",letterSpacing:".05em",textTransform:"uppercase"}}>
+                    ✉️  Your Email
+                  </label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={set("email")}
+                    placeholder="john@company.com"
+                    style={{
+                      width:"100%",padding:".7rem 1rem",borderRadius:".875rem",
+                      background:"rgba(255,255,255,.10)",border:"1px solid rgba(255,255,255,.18)",
+                      color:"#fff",fontSize:".875rem",outline:"none",
+                      transition:"background .2s,border-color .2s",
+                    }}
+                    onFocus={e=>{e.target.style.background="rgba(255,255,255,.15)";e.target.style.borderColor="rgba(61,124,245,.8)";}}
+                    onBlur={e=>{e.target.style.background="rgba(255,255,255,.10)";e.target.style.borderColor="rgba(255,255,255,.18)";}}
+                  />
+                </div>
 
                 {[
                   {label:"🌍  Origin Country",  key:"from", opts:COUNTRIES, ph:"Select origin…"},
@@ -109,6 +187,18 @@ export default function TradeCalculator() {
                   </div>
                 ))}
 
+                {error && (
+                  <div style={{
+                    gridColumn:"1 / -1",
+                    display:"flex",alignItems:"center",gap:8,
+                    color:"#fca5a5",fontSize:".8rem",
+                    background:"rgba(239,68,68,.10)",border:"1px solid rgba(239,68,68,.25)",
+                    borderRadius:".75rem",padding:".65rem 1rem",
+                  }}>
+                    ⚠️ {error}
+                  </div>
+                )}
+
                 {/* Submit button */}
                 <div>
                   <label style={{display:"block",fontSize:".7rem",color:"transparent",marginBottom:".4rem"}}>x</label>
@@ -133,6 +223,7 @@ export default function TradeCalculator() {
             </form>
           )}
         </div>
+        </Reveal>
       </div>
     </section>
   );

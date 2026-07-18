@@ -1,5 +1,7 @@
 "use client";
 
+import Reveal from "@/components/common/Reveal";
+
 const FEATURED = [
   {
     flag:"🇮🇳",
@@ -45,7 +47,7 @@ export default function GlobalPresence() {
       <div className="container-custom" style={{position:"relative",zIndex:1}}>
 
         {/* Header */}
-        <div style={{textAlign:"center",marginBottom:"3.5rem"}}>
+        <Reveal style={{textAlign:"center",marginBottom:"3.5rem"}}>
           <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"6px 16px",borderRadius:99,background:"rgba(255,255,255,.06)",border:"1px solid rgba(255,255,255,.12)",color:"rgba(191,219,254,1)",fontSize:".72rem",fontWeight:600,letterSpacing:".08em",textTransform:"uppercase",marginBottom:"1rem"}}>
             🌐 Our Global Presence
           </div>
@@ -60,12 +62,13 @@ export default function GlobalPresence() {
             Our core operations are rooted in India and China — the world's biggest manufacturing
             and export hubs — with active trade in 80+ countries.
           </p>
-        </div>
+        </Reveal>
 
         {/* ── Featured: Indo + China ── */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(280px,1fr))",gap:"1.25rem",marginBottom:"1.25rem"}}>
-          {FEATURED.map(({flag,code,name,tagline,cities,highlight,accentColor,glowColor})=>(
-            <div key={name} style={{
+          {FEATURED.map(({flag,code,name,tagline,cities,highlight,accentColor,glowColor},i)=>(
+            <Reveal key={name} delay={i * 0.12}>
+            <div style={{
               background:`linear-gradient(135deg,rgba(255,255,255,.10) 0%,rgba(255,255,255,.04) 100%)`,
               border:`1.5px solid ${accentColor}55`,
               borderRadius:"1.5rem",padding:"2rem",
@@ -108,13 +111,15 @@ export default function GlobalPresence() {
                 📦 {highlight}
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
 
         {/* ── Other Regions ── */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"1rem"}}>
-          {REGIONS.map(({emoji,name,color,countries})=>(
-            <div key={name} style={{
+          {REGIONS.map(({emoji,name,color,countries},i)=>(
+            <Reveal key={name} delay={i * 0.08}>
+            <div style={{
               background:"rgba(255,255,255,.04)",
               border:"1px solid rgba(255,255,255,.08)",
               borderRadius:"1.25rem",padding:"1.5rem",
@@ -140,10 +145,10 @@ export default function GlobalPresence() {
                 ))}
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
       </div>
     </section>
   );
 }
-

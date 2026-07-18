@@ -84,16 +84,32 @@ export default function AdminLayout({
   const [checking, setChecking] = useState(true);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loggingIn, setLoggingIn] = useState(false);
   const [leadCount, setLeadCount] = useState(0);
 
-  // Simple auth check
+  // Auth check — verifies the httpOnly session cookie with the server
+  // (sessionStorage previously just trusted a client-side flag that
+  // anyone could set from devtools).
   useEffect(() => {
-    const isAuth = sessionStorage.getItem("admin_auth") === "true";
-    setAuth(isAuth);
-    setChecking(false);
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/admin/session");
+        const data = await res.json();
+        setAuth(Boolean(data?.authenticated));
+      } catch (err) {
+        console.error(err);
+        setAuth(false);
+      } finally {
+        setChecking(false);
+      }
+    }
+
+    checkSession();
   }, []);
 
   useEffect(() => {
+    if (!auth) return;
+
     async function loadLeadCount() {
       try {
         const res = await fetch("/api/leads");
@@ -107,22 +123,42 @@ export default function AdminLayout({
     }
 
     loadLeadCount();
-  }, []);
+  }, [auth]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple password — change this to your own
-    if (password === "admin@tradepro123") {
-      sessionStorage.setItem("admin_auth", "true");
+    setError("");
+    setLoggingIn(true);
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error || "Incorrect password. Please try again.");
+        return;
+      }
+
       setAuth(true);
-      setError("");
-    } else {
-      setError("Incorrect password. Please try again.");
+      setPassword("");
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoggingIn(false);
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem("admin_auth");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/logout", { method: "POST" });
+    } catch (err) {
+      console.error(err);
+    }
     setAuth(false);
   };
 
@@ -281,6 +317,7 @@ export default function AdminLayout({
             )}
             <button
               type="submit"
+              disabled={loggingIn}
               style={{
                 padding: ".875rem",
                 borderRadius: ".875rem",
@@ -289,11 +326,12 @@ export default function AdminLayout({
                 fontWeight: 700,
                 fontSize: ".9375rem",
                 border: "none",
-                cursor: "pointer",
+                cursor: loggingIn ? "default" : "pointer",
+                opacity: loggingIn ? 0.7 : 1,
                 boxShadow: "0 4px 16px rgba(230,184,0,.35)",
               }}
             >
-              Sign In →
+              {loggingIn ? "Signing In…" : "Sign In →"}
             </button>
             <p
               style={{

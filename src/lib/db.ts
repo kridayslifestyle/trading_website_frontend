@@ -74,7 +74,7 @@ export function ensureProductsTable(): Promise<void> {
 
     description TEXT,
 
-    images JSONB DEFAULT '[]'::jsonb,
+    image TEXT,
 
     price NUMERIC,
 
@@ -92,39 +92,17 @@ export function ensureProductsTable(): Promise<void> {
 
     updated_at TIMESTAMPTZ DEFAULT now()
 );
-
-CREATE TABLE IF NOT EXISTS leads (
-
-id SERIAL PRIMARY KEY,
-
-product_id INTEGER,
-
-product_name TEXT,
-
-product_slug TEXT,
-
-name TEXT NOT NULL,
-
-email TEXT NOT NULL,
-
-phone TEXT,
-
-company TEXT,
-
-country TEXT,
-
-quantity TEXT,
-
-message TEXT,
-
-status TEXT DEFAULT 'New',
-
-created_at TIMESTAMP DEFAULT NOW()
-
-);
       `,
       )
-
+      // Migration safeguard: if this DB was created before the "image"
+      // column fix, it may still have the old "images" JSONB column and
+      // be missing "image". CREATE TABLE IF NOT EXISTS above won't patch
+      // an already-existing table, so patch it explicitly here.
+      .then(() =>
+        pool.query(
+          `ALTER TABLE products ADD COLUMN IF NOT EXISTS image TEXT;`,
+        ),
+      )
       .then(() => undefined);
   }
 
@@ -188,6 +166,18 @@ export function ensureLeadsTable(): Promise<void> {
           created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
         );
       `,
+      )
+      // Migration safeguard: if this DB already had a "leads" table
+      // created by the old (now removed) duplicate definition inside
+      // ensureProductsTable(), it may be missing these columns.
+      // CREATE TABLE IF NOT EXISTS above won't patch an existing table.
+      .then(() =>
+        pool.query(`
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS inquiry_type TEXT;
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS product TEXT;
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget TEXT;
+          ALTER TABLE leads ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'Website';
+        `),
       )
       .then(() => undefined);
   }

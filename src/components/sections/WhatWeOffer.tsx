@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight, Package, Ship, Search, BookOpen, Globe, FileText } from "lucide-react";
+import { motion } from "framer-motion";
+import Reveal from "@/components/common/Reveal";
 
 const OFFERS = [
   {
@@ -58,14 +62,14 @@ export default function WhatWeOffer() {
       <div className="container-custom">
         {/* Header */}
         <div className="grid lg:grid-cols-2 gap-10 items-end mb-14">
-          <div>
+          <Reveal direction="left">
             <span className="section-label mb-4">What We Offer</span>
             <h2 className="font-display text-3xl md:text-[2.4rem] font-bold text-slate-900 leading-tight">
               Complete Trade <br/>
               <span className="text-gradient">Services</span>
             </h2>
-          </div>
-          <div>
+          </Reveal>
+          <Reveal direction="right" delay={0.1}>
             <p className="text-slate-500 text-lg leading-relaxed mb-4">
               From sourcing to shipment, we handle every aspect of your international trade
               operations with precision and expertise.
@@ -74,22 +78,28 @@ export default function WhatWeOffer() {
               className="inline-flex items-center gap-2 text-brand-500 font-semibold text-sm hover:gap-3 transition-all">
               See all services <ArrowRight className="w-4 h-4"/>
             </Link>
-          </div>
+          </Reveal>
         </div>
 
         {/* 6 cards grid */}
         <div className="offers-grid">
-          {OFFERS.map(({icon:Icon,emoji,title,desc,color,stat})=>(
-            <div key={title} className="offer-card group">
-              <div className={`offer-icon-wrap ${color}`}>
-                <Icon className="w-6 h-6"/>
-              </div>
-              <h3 className="font-display font-semibold text-slate-900 text-base mb-2">{title}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-4">{desc}</p>
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-500 bg-brand-50 px-3 py-1 rounded-full border border-brand-100">
-                {emoji} {stat}
-              </span>
-            </div>
+          {OFFERS.map(({icon:Icon,emoji,title,desc,color,stat},i)=>(
+            <Reveal key={title} delay={i * 0.07}>
+              <motion.div
+                whileHover={{ y: -6 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="offer-card group"
+              >
+                <div className={`offer-icon-wrap ${color}`}>
+                  <Icon className="w-6 h-6"/>
+                </div>
+                <h3 className="font-display font-semibold text-slate-900 text-base mb-2">{title}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed mb-4">{desc}</p>
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-500 bg-brand-50 px-3 py-1 rounded-full border border-brand-100">
+                  {emoji} {stat}
+                </span>
+              </motion.div>
+            </Reveal>
           ))}
         </div>
       </div>

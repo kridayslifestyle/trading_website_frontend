@@ -1,20 +1,44 @@
 "use client";
 import { useState } from "react";
-import { Send, CheckCircle, Zap, ShieldCheck, Lock } from "lucide-react";
+import { Send, CheckCircle, Zap, ShieldCheck, Lock, AlertCircle } from "lucide-react";
+import Reveal from "@/components/common/Reveal";
 
 const PRODUCTS=["Masaz Chairs & Furniture","Clothing & Apparel","Engineering Tools & Machinery","Textiles & Apparel","Home Products"];
 const TYPES=["Import","Export","Supplier Sourcing","Trade Consulting"];
 
+const EMPTY_FORM = {name:"",company:"",email:"",phone:"",country:"",type:"",product:"",message:""};
+
 export default function ContactFormSection() {
-  const [form,setForm]=useState({name:"",company:"",email:"",phone:"",country:"",type:"",product:"",message:""});
+  const [form,setForm]=useState(EMPTY_FORM);
   const [ok,setOk]=useState(false);
   const [loading,setLoading]=useState(false);
+  const [error,setError]=useState("");
   const ch=(e:React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>)=>
     setForm(p=>({...p,[e.target.name]:e.target.value}));
   const submit=async(e:React.FormEvent)=>{
-    e.preventDefault(); setLoading(true);
-    await new Promise(r=>setTimeout(r,1500));
-    setLoading(false); setOk(true);
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to submit inquiry");
+      }
+
+      setOk(true);
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong. Please try again in a moment.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -23,6 +47,7 @@ export default function ContactFormSection() {
         <div className="grid lg:grid-cols-2 gap-14 items-center">
 
           {/* Left info */}
+          <Reveal direction="left">
           <div>
             <span className="section-label mb-4">Get In Touch</span>
             <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mb-4 leading-tight">
@@ -49,8 +74,10 @@ export default function ContactFormSection() {
               ))}
             </div>
           </div>
+          </Reveal>
 
           {/* Form card */}
+          <Reveal direction="right" delay={0.1}>
           <div className="contact-form-card">
             {ok ? (
               <div className="text-center py-10">
@@ -59,7 +86,7 @@ export default function ContactFormSection() {
                 </div>
                 <h3 className="font-display font-bold text-slate-900 text-xl mb-2">Inquiry Submitted!</h3>
                 <p className="text-slate-500 text-sm">Our team will contact you within 24 hours.</p>
-                <button onClick={()=>{setOk(false);setForm({name:"",company:"",email:"",phone:"",country:"",type:"",product:"",message:""})}}
+                <button onClick={()=>{setOk(false);setForm(EMPTY_FORM)}}
                   className="mt-5 text-sm text-brand-500 underline underline-offset-2">
                   Submit another inquiry
                 </button>
@@ -119,6 +146,13 @@ export default function ContactFormSection() {
                     className="input-field resize-none"/>
                 </div>
 
+                {error && (
+                  <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0"/>
+                    {error}
+                  </div>
+                )}
+
                 <button type="submit" disabled={loading} className="btn-primary w-full justify-center text-sm py-3.5">
                   {loading?(
                     <span className="flex items-center gap-2">
@@ -135,6 +169,7 @@ export default function ContactFormSection() {
               </form>
             )}
           </div>
+          </Reveal>
         </div>
       </div>
     </section>

@@ -1,4 +1,7 @@
+"use client";
+
 import { Star } from "lucide-react";
+import Reveal from "@/components/common/Reveal";
 
 const REVIEWS = [
   {
@@ -43,7 +46,7 @@ export default function Testimonials() {
       <div className="container-custom">
         
         {/* Header */}
-        <div className="text-center mb-14">
+        <Reveal className="text-center mb-14">
           <span className="section-label mb-4">
             Client Reviews
           </span>
@@ -56,7 +59,7 @@ export default function Testimonials() {
             Our clients across the world rely on us for consistent,
             transparent, and professional trade services.
           </p>
-        </div>
+        </Reveal>
 
         {/* Marquee */}
         <div className="reviews-marquee">

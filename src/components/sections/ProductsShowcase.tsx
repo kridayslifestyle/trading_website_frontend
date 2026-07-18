@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
+import Reveal from "@/components/common/Reveal";
 
 const PRODUCTS = [
   {
@@ -49,7 +53,7 @@ export default function ProductsShowcase() {
     <section className="products-section section-pad">
       <div className="container-custom">
         {/* Header */}
-        <div className="text-center mb-14">
+        <Reveal className="text-center mb-14">
           <span className="section-label mb-4">What We Trade</span>
           <h2 className="font-display text-3xl md:text-4xl font-bold text-slate-900 mb-4">
             Our Product Categories
@@ -57,32 +61,38 @@ export default function ProductsShowcase() {
           <p className="text-slate-500 text-lg max-w-xl mx-auto leading-relaxed">
             Five core categories. Globally sourced. Quality guaranteed. Ready to ship anywhere in the world.
           </p>
-        </div>
+        </Reveal>
 
         {/* Grid */}
         <div className="products-grid">
-          {PRODUCTS.map(({emoji,name,desc,tags,tagClass,from,to,border})=>(
-            <div key={name} className={`prod-card bg-gradient-to-br ${from} ${to} border ${border}`}>
-              <span className="prod-icon">{emoji}</span>
-              <h3 className="font-display font-semibold text-slate-900 text-[1.05rem] mb-2">{name}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed mb-4">{desc}</p>
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {tags.map(t=>(
-                  <span key={t} className={`prod-tag ${tagClass}`}>{t}</span>
-                ))}
-              </div>
-              <Link href="/products" className="prod-arrow">
-                View Products <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+          {PRODUCTS.map(({emoji,name,desc,tags,tagClass,from,to,border},i)=>(
+            <Reveal key={name} delay={i * 0.08}>
+              <motion.div
+                whileHover={{ y: -6 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className={`prod-card bg-gradient-to-br ${from} ${to} border ${border}`}
+              >
+                <span className="prod-icon">{emoji}</span>
+                <h3 className="font-display font-semibold text-slate-900 text-[1.05rem] mb-2">{name}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed mb-4">{desc}</p>
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {tags.map(t=>(
+                    <span key={t} className={`prod-tag ${tagClass}`}>{t}</span>
+                  ))}
+                </div>
+                <Link href="/products" className="prod-arrow">
+                  View Products <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </motion.div>
+            </Reveal>
           ))}
         </div>
 
-        <div className="text-center mt-10">
+        <Reveal delay={0.15} className="text-center mt-10">
           <Link href="/products" className="btn-primary">
             View All Products <ArrowRight className="w-4 h-4" />
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
